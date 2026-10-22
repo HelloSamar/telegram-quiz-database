@@ -1,9 +1,7 @@
 name: Fetch Telegram Quiz
 
 on:
-
   schedule:
-
     - cron: "*/15 * * * *"
 
   workflow_dispatch:
@@ -15,34 +13,27 @@ jobs:
 
     runs-on: ubuntu-latest
 
-
     steps:
 
-
-    - name: Checkout
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
 
-
-    - name: Setup Node
-      uses: actions/setup-node@v4
-
+    - name: Setup Python
+      uses: actions/setup-python@v5
       with:
-
-        node-version: 20
-
+        python-version: "3.12"
 
 
-    - name: Install packages
-      run: npm install
-
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
 
 
     - name: Fetch quizzes
-      run: node fetch_quizzes.js
+      run: |
+        python fetch_quizzes.py
 
       env:
-
         TELEGRAM_API_ID:
           ${{ secrets.TELEGRAM_API_ID }}
 
@@ -53,17 +44,13 @@ jobs:
           ${{ secrets.TELEGRAM_SESSION }}
 
 
-
-    - name: Commit updates
-
+    - name: Commit changes
       run: |
-
-        git config --global user.name "Quiz Collector"
-
-        git config --global user.email "quiz@github.com"
+        git config --global user.name "Quiz Bot"
+        git config --global user.email "bot@github.com"
 
         git add .
 
-        git commit -m "Update quizzes" || exit 0
+        git commit -m "Update quiz database" || exit 0
 
         git push
