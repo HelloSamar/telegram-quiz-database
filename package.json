@@ -1,0 +1,12 @@
+{
+  "name": "telegram-quiz-database",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node fetch_quizzes.js"
+  },
+  "dependencies": {
+    "telegram": "^2.26.22",
+    "input": "^1.0.1"
+  }
+}
