@@ -1,0 +1,31 @@
+name: Generate Telegram Session
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+
+  session:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install Telethon
+      run: |
+        pip install telethon
+
+    - name: Generate session
+      run: |
+        python generate_session.py
+
+      env:
+        TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+        TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
