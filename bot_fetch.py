@@ -16,8 +16,8 @@ import time
 import urllib.error
 import urllib.request
 
-from quizlib import (load_json, migrate_metadata, parse_bot_poll, save_json,
-                     to_compact, validate_quiz)
+from quizlib import (load_json, migrate_metadata, parse_bot_poll, save_compact,
+                     save_json, to_compact, validate_quiz)
 
 log = logging.getLogger("quiz")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -116,7 +116,7 @@ def main():
     meta["update_offset"] = offset  # confirms updates on the next getUpdates call
     meta["hashes"] = sorted(seen)
     save_json(QUIZZES_FILE, quizzes)
-    save_json(COMPACT_FILE, to_compact(quizzes))
+    save_compact(COMPACT_FILE, to_compact(quizzes))
     save_json(METADATA_FILE, meta)
     log.info("Done. %d new, %d total.", added_total, len(quizzes))
 
