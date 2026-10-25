@@ -99,3 +99,13 @@ def migrate_metadata(meta):
     offset = meta.get("update_offset", 0)
     return {"update_offset": offset if isinstance(offset, int) else 0,
             "hashes": list(meta.get("hashes", []))}
+
+
+def save_compact(path, rows):
+    """One quiz per line: [question, options, answer, explanation]."""
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write("[\n")
+        f.write(",\n".join(json.dumps(r, ensure_ascii=False) for r in rows))
+        f.write("\n]\n" if rows else "]\n")
+    os.replace(tmp, path)  # atomic
