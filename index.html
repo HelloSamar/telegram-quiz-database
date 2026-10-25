@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quiz Database</title>
+<style>
+:root{color-scheme:light dark;font-family:system-ui,sans-serif}
+body{max-width:640px;margin:2rem auto;padding:0 1rem}
+button{display:block;width:100%;margin:.4rem 0;padding:.7rem;text-align:left;font:inherit;cursor:pointer}
+.ok{background:#2e7d3233}.bad{background:#c6282833}
+</style></head><body>
+<h1>Quiz Database</h1>
+<p id="meta">Loading…</p><div id="card"></div>
+<button id="next" hidden>Next question</button>
+<script>
+let quizzes=[],score=0,asked=0;
+const $=id=>document.getElementById(id);
+fetch("quizzes.json").then(r=>r.json()).then(d=>{quizzes=d;next()})
+ .catch(()=>$("meta").textContent="Could not load quizzes.json");
+function next(){
+  $("next").hidden=true;
+  if(!quizzes.length){$("meta").textContent="No quizzes yet.";return}
+  const q=quizzes[Math.floor(Math.random()*quizzes.length)];
+  $("meta").textContent=`Score ${score}/${asked} · ${quizzes.length} quizzes`;
+  const card=$("card");card.textContent="";
+  const h=document.createElement("h2");h.textContent=q.question;card.append(h);
+  q.options.forEach((o,i)=>{
+    const b=document.createElement("button");b.textContent=o;
+    b.onclick=()=>{
+      asked++;if(i===q.answer)score++;
+      [...card.querySelectorAll("button")].forEach((x,j)=>{
+        x.disabled=true;if(j===q.answer)x.className="ok";else if(j===i)x.className="bad"});
+      if(q.explanation){const p=document.createElement("p");p.textContent=q.explanation;card.append(p)}
+      $("meta").textContent=`Score ${score}/${asked}`;$("next").hidden=false};
+    card.append(b)});
+}
+$("next").onclick=next;
+</script></body></html>
