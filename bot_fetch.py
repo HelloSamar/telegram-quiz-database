@@ -81,6 +81,9 @@ def main():
         for u in updates:
             offset = max(offset, u["update_id"] + 1)
             msg = u.get("message") or u.get("channel_post")
+            kind = next((k for k in ("poll", "text", "photo", "forward_origin", "document") if msg and k in msg), "other")
+            log.info("Update %s: from=%s chat=%s type=%s", u["update_id"],
+                     (msg or {}).get("from", {}).get("id"), (msg or {}).get("chat", {}).get("id"), kind)
             if not msg or "poll" not in msg:
                 continue
             sender = (msg.get("from") or {}).get("id")
