@@ -3,54 +3,44 @@ name: Fetch Telegram Quiz
 on:
   schedule:
     - cron: "*/15 * * * *"
-
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-quizzes
+  cancel-in-progress: false
 
 jobs:
-
   fetch:
-
     runs-on: ubuntu-latest
-
+    timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v4
 
-    - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
 
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
+      - name: Fetch quizzes
+        run: python fetch_quizzes.py
+        env:
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          TELEGRAM_SESSION: ${{ secrets.TELEGRAM_SESSION }}
+          TELEGRAM_GROUP: ${{ vars.TELEGRAM_GROUP }}
 
-
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-
-
-    - name: Fetch quizzes
-      run: |
-        python fetch_quizzes.py
-
-      env:
-        TELEGRAM_API_ID:
-          ${{ secrets.TELEGRAM_API_ID }}
-
-        TELEGRAM_API_HASH:
-          ${{ secrets.TELEGRAM_API_HASH }}
-
-        TELEGRAM_SESSION:
-          ${{ secrets.TELEGRAM_SESSION }}
-
-
-    - name: Commit changes
-      run: |
-        git config --global user.name "Quiz Bot"
-        git config --global user.email "bot@github.com"
-
-        git add .
-
-        git commit -m "Update quiz database" || exit 0
-
-        git push
+      - name: Commit changes
+        run: |
+          git config user.name "Quiz Bot"
+          git config user.email "bot@github.com"
+          git add quizzes.json metadata.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Update quiz database"
+          git pull --rebase
+          git push
