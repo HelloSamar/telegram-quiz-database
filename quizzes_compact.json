@@ -1,24 +1,13 @@
 [
-  [
-    "[1/2] Ty",
-    [
-      "1",
-      "Tu",
-      "J",
-      "Yy"
-    ],
-    2,
-    ""
-  ],
-  [
-    "[2/2] Gajdnxnx",
-    [
-      "Bxnxn",
-      "Nxjd",
-      "Ndnx",
-      "Jsjsks"
-    ],
-    0,
-    ""
-  ]
+["Q90/100: A small kitchen or room at the back of a house used for washing dishes and other dirty household work", ["Scullery", "Scullion", "Pantry", "Cutlery"], 0, "Scullery = बरतन माँजने की जगह. Scullion = kitchen servant; Pantry = room for food storage; Cutlery = knives, forks and spoons."],
+["Q91/100: A substance used for killing pests", ["Disinfectant", "Pesticide", "Fertiliser", "Antiseptic"], 1, "Pesticide = कीटनाशक. Disinfectant = kills germs on surfaces; Fertiliser = plant nutrient; Antiseptic = prevents infection."],
+["Q92/100: Careful and persistent work or effort", ["Decadence", "Diligence", "Dissidence", "Dilemma"], 1, "Diligence = लगन. Decadence = moral decline; Dissidence = disagreement with authority; Dilemma = difficult choice."],
+["Q93/100: Move suddenly and powerfully forward or upward", ["Urge", "Purge", "Splurge", "Surge"], 3, "Surge = उछाल. Urge = strong desire; Purge = get rid of; Splurge = spend lavishly."],
+["Q94/100: To make evasive or misleading statements", ["Pontificate", "Procrastinate", "Prevail", "Prevaricate"], 3, "Prevaricate = टालमटोल करना. Pontificate = speak pompously; Procrastinate = delay doing something; Prevail = prove stronger."],
+["Q95/100: A computer printout sent out by a bank regarding debits and credits in your account", ["Stationery", "Statesman", "Statement", "Statute"], 2, "Statement = खाता विवरण. Stationery = writing materials; Statesman = respected political leader; Statute = written law."],
+["Q96/100: A minor mistake in grammar or social behaviour", ["Solace", "Solipsism", "Solemnity", "Solecism"], 3, "Solecism = व्याकरण या शिष्टाचार की भूल. Solace = comfort; Solipsism = belief that only oneself exists; Solemnity = seriousness."],
+["Q97/100: A person who works in a bar, serving drinks", ["Brewer", "Sommelier", "Barista", "Bartender"], 3, "Bartender = शराबखाने का कर्मचारी. Brewer = maker of beer; Sommelier = wine waiter; Barista = coffee maker."],
+["Q98/100: Recklessly extravagant or wasteful in the use of resources", ["Profuse", "Profligate", "Proficient", "Prolific"], 1, "Profligate = अपव्ययी. Profuse = abundant; Proficient = skilled; Prolific = producing much."],
+["Q99/100: Go or come after a person or thing proceeding ahead", ["Hollow", "Follow", "Fellow", "Fallow"], 1, "Follow = अनुसरण करना. Hollow = empty inside; Fellow = companion; Fallow = left unsown."],
+["Q100/100: Owing money to someone", ["Indignant", "Indigent", "Indolent", "Indebted"], 3, "Indebted = ऋणी. Indignant = angry at unfair treatment; Indigent = poor; Indolent = lazy."]
 ]

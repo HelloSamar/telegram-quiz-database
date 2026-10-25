@@ -1,1 +1,167 @@
-[]
+[
+  {
+    "id": "177d0ac79be2f501",
+    "question": "Q90/100: A small kitchen or room at the back of a house used for washing dishes and other dirty household work",
+    "options": [
+      "Scullery",
+      "Scullion",
+      "Pantry",
+      "Cutlery"
+    ],
+    "answer": 0,
+    "explanation": "Scullery = बरतन माँजने की जगह. Scullion = kitchen servant; Pantry = room for food storage; Cutlery = knives, forks and spoons.",
+    "source": "hi_samar",
+    "message_id": 23,
+    "date": "2026-10-25T19:25:56+00:00"
+  },
+  {
+    "id": "2fb38da18878c602",
+    "question": "Q91/100: A substance used for killing pests",
+    "options": [
+      "Disinfectant",
+      "Pesticide",
+      "Fertiliser",
+      "Antiseptic"
+    ],
+    "answer": 1,
+    "explanation": "Pesticide = कीटनाशक. Disinfectant = kills germs on surfaces; Fertiliser = plant nutrient; Antiseptic = prevents infection.",
+    "source": "hi_samar",
+    "message_id": 24,
+    "date": "2026-10-25T19:25:56+00:00"
+  },
+  {
+    "id": "dff4c6b491b31e60",
+    "question": "Q92/100: Careful and persistent work or effort",
+    "options": [
+      "Decadence",
+      "Diligence",
+      "Dissidence",
+      "Dilemma"
+    ],
+    "answer": 1,
+    "explanation": "Diligence = लगन. Decadence = moral decline; Dissidence = disagreement with authority; Dilemma = difficult choice.",
+    "source": "hi_samar",
+    "message_id": 25,
+    "date": "2026-10-25T19:25:56+00:00"
+  },
+  {
+    "id": "8db071143ff04027",
+    "question": "Q93/100: Move suddenly and powerfully forward or upward",
+    "options": [
+      "Urge",
+      "Purge",
+      "Splurge",
+      "Surge"
+    ],
+    "answer": 3,
+    "explanation": "Surge = उछाल. Urge = strong desire; Purge = get rid of; Splurge = spend lavishly.",
+    "source": "hi_samar",
+    "message_id": 26,
+    "date": "2026-10-25T19:25:56+00:00"
+  },
+  {
+    "id": "b2afecfadc6eaeed",
+    "question": "Q94/100: To make evasive or misleading statements",
+    "options": [
+      "Pontificate",
+      "Procrastinate",
+      "Prevail",
+      "Prevaricate"
+    ],
+    "answer": 3,
+    "explanation": "Prevaricate = टालमटोल करना. Pontificate = speak pompously; Procrastinate = delay doing something; Prevail = prove stronger.",
+    "source": "hi_samar",
+    "message_id": 27,
+    "date": "2026-10-25T19:25:56+00:00"
+  },
+  {
+    "id": "b761586baf485120",
+    "question": "Q95/100: A computer printout sent out by a bank regarding debits and credits in your account",
+    "options": [
+      "Stationery",
+      "Statesman",
+      "Statement",
+      "Statute"
+    ],
+    "answer": 2,
+    "explanation": "Statement = खाता विवरण. Stationery = writing materials; Statesman = respected political leader; Statute = written law.",
+    "source": "hi_samar",
+    "message_id": 28,
+    "date": "2026-10-25T19:25:56+00:00"
+  },
+  {
+    "id": "b05a54ca624a1ad6",
+    "question": "Q96/100: A minor mistake in grammar or social behaviour",
+    "options": [
+      "Solace",
+      "Solipsism",
+      "Solemnity",
+      "Solecism"
+    ],
+    "answer": 3,
+    "explanation": "Solecism = व्याकरण या शिष्टाचार की भूल. Solace = comfort; Solipsism = belief that only oneself exists; Solemnity = seriousness.",
+    "source": "hi_samar",
+    "message_id": 29,
+    "date": "2026-10-25T19:25:56+00:00"
+  },
+  {
+    "id": "1b8e0c7f866c05eb",
+    "question": "Q97/100: A person who works in a bar, serving drinks",
+    "options": [
+      "Brewer",
+      "Sommelier",
+      "Barista",
+      "Bartender"
+    ],
+    "answer": 3,
+    "explanation": "Bartender = शराबखाने का कर्मचारी. Brewer = maker of beer; Sommelier = wine waiter; Barista = coffee maker.",
+    "source": "hi_samar",
+    "message_id": 30,
+    "date": "2026-10-25T19:25:56+00:00"
+  },
+  {
+    "id": "b2586fb931cb01b4",
+    "question": "Q98/100: Recklessly extravagant or wasteful in the use of resources",
+    "options": [
+      "Profuse",
+      "Profligate",
+      "Proficient",
+      "Prolific"
+    ],
+    "answer": 1,
+    "explanation": "Profligate = अपव्ययी. Profuse = abundant; Proficient = skilled; Prolific = producing much.",
+    "source": "hi_samar",
+    "message_id": 31,
+    "date": "2026-10-25T19:25:56+00:00"
+  },
+  {
+    "id": "7b0b6a0a36ff26b7",
+    "question": "Q99/100: Go or come after a person or thing proceeding ahead",
+    "options": [
+      "Hollow",
+      "Follow",
+      "Fellow",
+      "Fallow"
+    ],
+    "answer": 1,
+    "explanation": "Follow = अनुसरण करना. Hollow = empty inside; Fellow = companion; Fallow = left unsown.",
+    "source": "hi_samar",
+    "message_id": 32,
+    "date": "2026-10-25T19:25:56+00:00"
+  },
+  {
+    "id": "6f7cd4aa03b85216",
+    "question": "Q100/100: Owing money to someone",
+    "options": [
+      "Indignant",
+      "Indigent",
+      "Indolent",
+      "Indebted"
+    ],
+    "answer": 3,
+    "explanation": "Indebted = ऋणी. Indignant = angry at unfair treatment; Indigent = poor; Indolent = lazy.",
+    "source": "hi_samar",
+    "message_id": 33,
+    "date": "2026-10-25T19:25:56+00:00"
+  }
+]
