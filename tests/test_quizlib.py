@@ -1,42 +1,36 @@
-import datetime
 import os
 import sys
-from types import SimpleNamespace as NS
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from quizlib import (content_hash, migrate_metadata, parse_quiz, to_compact,
+from quizlib import (content_hash, migrate_metadata, parse_bot_poll, to_compact,
                      validate_quiz)
 
 
-def msg(quiz=True, correct=1, question="Capital of France?", opts=("Rome", "Paris"),
-        solution="Paris is the capital."):
-    poll = NS(quiz=quiz, question=NS(text=question),
-              answers=[NS(text=NS(text=o)) for o in opts])
-    results = NS(results=[NS(correct=(i == correct)) for i in range(len(opts))],
-                 solution=solution)
-    return NS(id=7, date=datetime.datetime(2026, 1, 1), poll=NS(poll=poll, results=results))
+def poll(**kw):
+    p = {"type": "quiz", "question": "Capital of France?",
+         "options": [{"text": "Rome"}, {"text": "Paris"}],
+         "correct_option_id": 1, "explanation": "Paris."}
+    p.update(kw)
+    return p
 
 
 def test_parse_ok():
-    q = parse_quiz(msg(), source="grp")
-    assert q["answer"] == 1 and q["options"] == ["Rome", "Paris"]
-    assert q["explanation"] == "Paris is the capital." and q["source"] == "grp"
+    q, why = parse_bot_poll(poll(), 7, 1767225600, "me")
+    assert why is None and q["answer"] == 1 and q["options"] == ["Rome", "Paris"]
+    assert q["date"].startswith("2026-01-01") and q["source"] == "me"
     assert validate_quiz(q) == []
 
 
-def test_plain_string_text():
-    m = msg()
-    m.poll.poll.question = "Plain?"
-    assert parse_quiz(m)["question"] == "Plain?"
+def test_new_api_ids_list():
+    q, _ = parse_bot_poll(poll(correct_option_id=None, correct_option_ids=[0]))
+    assert q["answer"] == 0
 
 
-def test_non_quiz_and_no_poll_skipped():
-    assert parse_quiz(msg(quiz=False)) is None
-    assert parse_quiz(NS(poll=None)) is None
-
-
-def test_unknown_answer_skipped():
-    assert parse_quiz(msg(correct=-1)) is None
+def test_skips():
+    assert parse_bot_poll(poll(type="regular"))[0] is None
+    q, why = parse_bot_poll(poll(correct_option_id=None))
+    assert q is None and "hidden" in why
+    assert parse_bot_poll(poll(correct_option_ids=[0, 1]))[0] is None
 
 
 def test_hash_ignores_case_whitespace_option_order():
@@ -56,12 +50,11 @@ def test_validation():
 
 
 def test_compact():
-    q = parse_quiz(msg())
-    assert to_compact([q]) == [["Capital of France?", ["Rome", "Paris"], 1,
-                                "Paris is the capital."]]
+    q, _ = parse_bot_poll(poll())
+    assert to_compact([q]) == [["Capital of France?", ["Rome", "Paris"], 1, "Paris."]]
 
 
-def test_migrate_legacy_metadata():
-    m = migrate_metadata({"last_message_id": 42, "poll_ids": [1]}, ["g"])
-    assert m == {"last_message_id": {"g": 42}, "hashes": []}
-    assert migrate_metadata({}, ["g"])["last_message_id"] == {}
+def test_migrate_metadata():
+    assert migrate_metadata({"last_message_id": {"g": 4}, "hashes": ["a"]}) == \
+        {"update_offset": 0, "hashes": ["a"]}
+    assert migrate_metadata(None) == {"update_offset": 0, "hashes": []}
