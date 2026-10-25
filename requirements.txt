@@ -1,1 +1,1 @@
-telethon==1.45.0
+# no third-party dependencies (standard library only)

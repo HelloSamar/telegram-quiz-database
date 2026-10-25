@@ -1,5 +1,6 @@
 """Pure helpers (no network) so they can be unit-tested."""
 import hashlib
+from datetime import datetime, timezone
 import json
 import os
 import re
@@ -21,35 +22,30 @@ def content_hash(question, options):
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
 
-def parse_quiz(message, source=""):
-    """Return a quiz dict for a quiz-poll message, else None."""
-    media = getattr(message, "poll", None)
-    if media is None:
-        return None
-    poll = media.poll
-    if not poll.quiz:
-        return None
-    results = media.results
-    correct = None
-    if results and results.results:
-        for i, r in enumerate(results.results):
-            if r.correct:
-                correct = i
-                break
-    if correct is None:
-        return None
-    options = [text_of(a.text) for a in poll.answers]
-    question = text_of(poll.question)
+def parse_bot_poll(poll, message_id=None, date=None, source=""):
+    """Parse a Bot API Poll dict. Returns (quiz_or_None, skip_reason_or_None)."""
+    if poll.get("type") != "quiz":
+        return None, "not a quiz"
+    ids = poll.get("correct_option_ids")
+    if ids is None and poll.get("correct_option_id") is not None:
+        ids = [poll["correct_option_id"]]
+    if not ids:
+        return None, "correct answer hidden by Telegram (forward the quiz to the bot privately)"
+    if len(ids) != 1:
+        return None, "multiple correct answers not supported"
+    options = [text_of(o.get("text") if isinstance(o, dict) else o)
+               for o in poll.get("options", [])]
+    question = text_of(poll.get("question"))
     return {
         "id": content_hash(question, options),
         "question": question,
         "options": options,
-        "answer": correct,
-        "explanation": text_of(results.solution) if results and results.solution else "",
+        "answer": ids[0],
+        "explanation": poll.get("explanation") or "",
         "source": source,
-        "message_id": message.id,
-        "date": message.date.isoformat() if getattr(message, "date", None) else None,
-    }
+        "message_id": message_id,
+        "date": datetime.fromtimestamp(date, timezone.utc).isoformat() if date else None,
+    }, None
 
 
 def validate_quiz(q):
@@ -97,13 +93,9 @@ def save_json(path, data):
     os.replace(tmp, path)  # atomic
 
 
-def migrate_metadata(meta, groups):
-    """Old: {last_message_id:int, poll_ids:[...]}  ->  per-source ids + hashes."""
-    meta = dict(meta or {})
-    last = meta.get("last_message_id", {})
-    if not isinstance(last, dict):  # legacy int
-        last = {groups[0]: last} if groups and last else {}
-    meta["last_message_id"] = last
-    meta.setdefault("hashes", [])
-    meta.pop("poll_ids", None)  # superseded by content hashes
-    return meta
+def migrate_metadata(meta):
+    """Normalise metadata; drops fields from the old Telethon version."""
+    meta = meta if isinstance(meta, dict) else {}
+    offset = meta.get("update_offset", 0)
+    return {"update_offset": offset if isinstance(offset, int) else 0,
+            "hashes": list(meta.get("hashes", []))}
