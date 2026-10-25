@@ -71,10 +71,35 @@ def validate_quiz(q):
     return problems
 
 
+def to_row(q):
+    """Stored format: [question, options, correct_index, explanation]."""
+    return [q["question"], q["options"], q["answer"], q.get("explanation", "")]
+
+
 def to_compact(quizzes):
-    """Legacy format: [question, options, correct_index, explanation]."""
-    return [[q["question"], q["options"], q["answer"], q.get("explanation", "")]
-            for q in quizzes]
+    return [to_row(q) for q in quizzes]
+
+
+def validate_row(row):
+    """Validate a stored [question, options, answer, explanation] row."""
+    if not (isinstance(row, list) and len(row) == 4):
+        return ["row must be [question, options, answer, explanation]"]
+    question, options, answer, explanation = row
+    if not (isinstance(question, str) and isinstance(explanation, str)):
+        return ["question and explanation must be strings"]
+    return validate_quiz({"id": "-", "question": question, "options": options,
+                          "answer": answer})
+
+
+def save_row(folder, quiz_id, row):
+    """Write one quiz to its own file: <folder>/<id>.json (one line)."""
+    os.makedirs(folder, exist_ok=True)
+    path = os.path.join(folder, f"{quiz_id}.json")
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    os.replace(tmp, path)
+    return path
 
 
 def load_json(path, default):
@@ -99,13 +124,3 @@ def migrate_metadata(meta):
     offset = meta.get("update_offset", 0)
     return {"update_offset": offset if isinstance(offset, int) else 0,
             "hashes": list(meta.get("hashes", []))}
-
-
-def save_compact(path, rows):
-    """One quiz per line: [question, options, answer, explanation]."""
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        f.write("[\n")
-        f.write(",\n".join(json.dumps(r, ensure_ascii=False) for r in rows))
-        f.write("\n]\n" if rows else "]\n")
-    os.replace(tmp, path)  # atomic

@@ -1,0 +1,60 @@
+name: Fetch Telegram Quiz
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: fetch-quizzes
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch quizzes
+        run: python bot_fetch.py
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          ALLOWED_USER_IDS: ${{ vars.ALLOWED_USER_IDS }}
+
+      - name: Validate data
+        run: python validate.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "Quiz Bot"
+          git config user.email "bot@github.com"
+          git rm -q --ignore-unmatch quizzes.json quizzes_compact.json  # old merged files (migrated into quizzes/)
+          git add quizzes metadata.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Update quiz database"
+          git pull --rebase
+          git push
+
+      - name: Open issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Quiz fetch workflow failed"
+          url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          existing=$(gh issue list --state open --search "$title in:title" --json number -q '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Failed again: $url"
+          else
+            gh issue create --title "$title" --body "Run: $url
+          Common causes: invalid BOT_TOKEN, missing ALLOWED_USER_IDS, rate limit."
+          fi

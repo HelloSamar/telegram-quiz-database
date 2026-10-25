@@ -14,8 +14,10 @@ button{display:block;width:100%;margin:.4rem 0;padding:.7rem;text-align:left;fon
 <script>
 let quizzes=[],score=0,asked=0;
 const $=id=>document.getElementById(id);
-fetch("quizzes.json").then(r=>r.json()).then(d=>{quizzes=d;next()})
- .catch(()=>$("meta").textContent="Could not load quizzes.json");
+fetch("quizzes/index.json").then(r=>r.json())
+ .then(names=>Promise.all(names.map(n=>fetch("quizzes/"+n).then(r=>r.json()))))
+ .then(rows=>{quizzes=rows.map(([question,options,answer,explanation])=>({question,options,answer,explanation}));next()})
+ .catch(()=>$("meta").textContent="Could not load quizzes/");
 function next(){
   $("next").hidden=true;
   if(!quizzes.length){$("meta").textContent="No quizzes yet.";return}
