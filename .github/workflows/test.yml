@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
-    paths-ignore: ["quizzes*.json", "metadata.json"]
+    paths-ignore: ["quizzes/**", "quizzes*.json", "metadata.json"]
 
 permissions:
   contents: read

@@ -37,7 +37,8 @@ jobs:
         run: |
           git config user.name "Quiz Bot"
           git config user.email "bot@github.com"
-          git add quizzes.json quizzes_compact.json metadata.json
+          git rm -q --ignore-unmatch quizzes.json quizzes_compact.json  # old merged files (migrated into quizzes/)
+          git add quizzes metadata.json
           git diff --cached --quiet && exit 0
           git commit -m "Update quiz database"
           git pull --rebase
