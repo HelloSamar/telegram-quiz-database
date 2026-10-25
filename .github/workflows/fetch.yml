@@ -4,9 +4,15 @@ on:
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Scan full history instead of only new messages"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: fetch-quizzes
@@ -34,6 +40,10 @@ jobs:
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
           TELEGRAM_SESSION: ${{ secrets.TELEGRAM_SESSION }}
           TELEGRAM_GROUP: ${{ vars.TELEGRAM_GROUP }}
+          BACKFILL: ${{ inputs.backfill }}
+
+      - name: Validate data
+        run: python validate.py
 
       - name: Commit changes
         run: |
@@ -44,3 +54,18 @@ jobs:
           git commit -m "Update quiz database"
           git pull --rebase
           git push
+
+      - name: Open issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Quiz fetch workflow failed"
+          url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          existing=$(gh issue list --state open --search "$title in:title" --json number -q '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Failed again: $url"
+          else
+            gh issue create --title "$title" --body "Run: $url
+          Common causes: expired TELEGRAM_SESSION, rate limit, wrong TELEGRAM_GROUP."
+          fi
