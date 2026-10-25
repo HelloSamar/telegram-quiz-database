@@ -4,9 +4,9 @@ Stores Telegram quiz polls as JSON **inside this repo**. A Telegram bot receives
 you forward to it; a GitHub Action (every 15 min) saves them. Nothing runs on your computer.
 
 ## Data
-- `quizzes/<id>.json`: one file per quiz, never merged. Each holds
-  `[question, options, correct_index, explanation]` (`id` is a content hash, so duplicates are stored once)
-- `quizzes/index.json`: list of the file names, in the order they were added (used by the player)
+- `quizzes/batch_<date>_<time>.json`: **one file per run** (one batch); one quiz per line as
+  `[question, options, correct_index, explanation]`. Runs with nothing new create no file.
+- `quizzes/index.json`: list of the batch file names, in order (used by the player)
 - `metadata.json`: update offset + seen hashes
 - `index.html`: optional quiz player (enable Pages from `main` / root)
 

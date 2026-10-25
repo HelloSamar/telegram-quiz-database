@@ -11,20 +11,22 @@ Standard library only; the token is never logged.
 import json
 import logging
 import os
+from datetime import datetime, timezone
 import sys
 import time
 import urllib.error
 import urllib.request
 
 from quizlib import (load_json, migrate_metadata, parse_bot_poll, save_json,
-                     save_row, to_row, validate_quiz)
+                     save_rows, to_row, validate_quiz, validate_row)
 
 log = logging.getLogger("quiz")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
-QUIZ_DIR = "quizzes"                     # one file per quiz: quizzes/<id>.json
-MANIFEST = os.path.join(QUIZ_DIR, "index.json")  # list of file names (for the player)
-LEGACY_FILE = "quizzes.json"             # old merged file; migrated once into QUIZ_DIR
+QUIZ_DIR = "quizzes"                     # one file per run: quizzes/batch_<UTC time>.json
+MANIFEST = os.path.join(QUIZ_DIR, "index.json")  # list of batch file names (for the player)
+MIGRATED = "batch_00000000_migrated.json"  # old per-quiz / merged files are gathered here once
+LEGACY_FILE = "quizzes.json"
 METADATA_FILE = "metadata.json"
 MAX_PAGES = 20  # x100 updates per run
 MAX_RETRIES = 3
@@ -60,27 +62,37 @@ def call(token, method, **params):
         raise RuntimeError(f"{method} failed: {data.get('error_code')} {data.get('description')}")
 
 
-def migrate_legacy(manifest):
-    """Move quizzes from the old merged quizzes.json into one file each."""
-    moved = 0
+def migrate_old(rows, ids):
+    """Gather old per-quiz files (<id>.json) and the old merged quizzes.json into `rows`."""
+    for name in sorted(os.listdir(QUIZ_DIR)):
+        if name == "index.json" or name.startswith("batch_") or not name.endswith(".json"):
+            continue
+        path = os.path.join(QUIZ_DIR, name)
+        row = load_json(path, None)
+        if row and not validate_row(row):
+            rows.append(row)
+        ids.add(name[:-5])
+        os.remove(path)
     for q in load_json(LEGACY_FILE, []):
-        if "id" in q and not validate_quiz(q) and f"{q['id']}.json" not in manifest:
-            save_row(QUIZ_DIR, q["id"], to_row(q))
-            manifest.append(f"{q['id']}.json")
-            moved += 1
-    return moved
+        if "id" in q and not validate_quiz(q) and q["id"] not in ids:
+            rows.append(to_row(q))
+            ids.add(q["id"])
+
+
+def all_rows(manifest):
+    rows = []
+    for name in manifest:
+        rows += load_json(os.path.join(QUIZ_DIR, name), [])
+    return rows
 
 
 def stats_text(manifest, added_now):
-    lines = [f"📊 Total quizzes: {len(manifest)}", f"➕ Added this run: {added_now}"]
-    latest = []
-    for name in manifest[-3:][::-1]:
-        row = load_json(os.path.join(QUIZ_DIR, name), None)
-        if row:
-            latest.append("• " + row[0][:60])
-    if latest:
+    rows = all_rows(manifest)
+    lines = [f"📊 Total quizzes: {len(rows)}", f"📦 Batches: {len(manifest)}",
+             f"➕ Added this run: {added_now}"]
+    if rows:
         lines.append("Latest:")
-        lines += latest
+        lines += ["• " + r[0][:60] for r in rows[-3:][::-1]]
     return "\n".join(lines)
 
 
@@ -95,13 +107,17 @@ def main():
 
     os.makedirs(QUIZ_DIR, exist_ok=True)
     meta = migrate_metadata(load_json(METADATA_FILE, {}))
+    seen = set(meta["hashes"])
     manifest = [n for n in load_json(MANIFEST, []) if os.path.exists(os.path.join(QUIZ_DIR, n))]
-    on_disk = {n for n in os.listdir(QUIZ_DIR) if n.endswith(".json") and n != "index.json"}
-    manifest += sorted(on_disk - set(manifest))
-    migrated = migrate_legacy(manifest)
-    if migrated:
-        log.info("Migrated %d quizzes from %s", migrated, LEGACY_FILE)
-    seen = set(meta["hashes"]) | {n[:-5] for n in manifest}
+    old_rows = []
+    migrate_old(old_rows, seen)
+    if old_rows:
+        path = os.path.join(QUIZ_DIR, MIGRATED)
+        save_rows(path, load_json(path, []) + old_rows)
+        if MIGRATED not in manifest:
+            manifest.insert(0, MIGRATED)
+        log.info("Gathered %d old quizzes into %s", len(old_rows), MIGRATED)
+    new_rows = []  # this run's quizzes -> ONE batch file
     offset = meta["update_offset"]
     stats = {}  # chat_id -> {"added": n, "dup": n, "skipped": {reason: n}}
     stats_requests = set()  # chats where an allowed user sent /stats
@@ -146,19 +162,23 @@ def main():
                 st["dup"] += 1
             else:
                 seen.add(quiz["id"])
-                save_row(QUIZ_DIR, quiz["id"], to_row(quiz))  # one file per quiz, never merged
-                manifest.append(f"{quiz['id']}.json")
+                new_rows.append(to_row(quiz))
                 st["added"] += 1
                 added_total += 1
                 log.info("Saved: %s", quiz["question"][:80])
         if len(updates) < 100:
             break
 
+    if new_rows:  # one run = one batch file
+        name = f"batch_{datetime.now(timezone.utc):%Y%m%d_%H%M%S}.json"
+        save_rows(os.path.join(QUIZ_DIR, name), new_rows)
+        manifest.append(name)
+        log.info("Wrote %s with %d quizzes", name, len(new_rows))
     meta["update_offset"] = offset  # confirms updates on the next getUpdates call
     meta["hashes"] = sorted(seen)
     save_json(MANIFEST, manifest)
     save_json(METADATA_FILE, meta)
-    log.info("Done. %d new, %d total.", added_total, len(manifest))
+    log.info("Done. %d new, %d batches.", added_total, len(manifest))
 
     # Replies (best effort): one summary per private chat, plus /stats answers
     for chat_id, st in stats.items():

@@ -16,7 +16,7 @@ let quizzes=[],score=0,asked=0;
 const $=id=>document.getElementById(id);
 fetch("quizzes/index.json").then(r=>r.json())
  .then(names=>Promise.all(names.map(n=>fetch("quizzes/"+n).then(r=>r.json()))))
- .then(rows=>{quizzes=rows.map(([question,options,answer,explanation])=>({question,options,answer,explanation}));next()})
+ .then(batches=>{quizzes=batches.flat().map(([question,options,answer,explanation])=>({question,options,answer,explanation}));next()})
  .catch(()=>$("meta").textContent="Could not load quizzes/");
 function next(){
   $("next").hidden=true;

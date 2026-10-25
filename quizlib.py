@@ -91,15 +91,13 @@ def validate_row(row):
                           "answer": answer})
 
 
-def save_row(folder, quiz_id, row):
-    """Write one quiz to its own file: <folder>/<id>.json (one line)."""
-    os.makedirs(folder, exist_ok=True)
-    path = os.path.join(folder, f"{quiz_id}.json")
+def save_rows(path, rows):
+    """Write a batch: one quiz per line inside a JSON list."""
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
-        f.write(json.dumps(row, ensure_ascii=False) + "\n")
-    os.replace(tmp, path)
-    return path
+        f.write("[\n" + ",\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n]\n")
+    os.replace(tmp, path)  # atomic
 
 
 def load_json(path, default):
@@ -124,3 +122,4 @@ def migrate_metadata(meta):
     offset = meta.get("update_offset", 0)
     return {"update_offset": offset if isinstance(offset, int) else 0,
             "hashes": list(meta.get("hashes", []))}
+
