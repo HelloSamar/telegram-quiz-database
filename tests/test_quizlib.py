@@ -3,7 +3,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from quizlib import (content_hash, migrate_metadata, parse_bot_poll, to_compact,
-                     validate_quiz)
+                     validate_quiz, validate_row)
 
 
 def poll(**kw):
@@ -58,3 +58,10 @@ def test_migrate_metadata():
     assert migrate_metadata({"last_message_id": {"g": 4}, "hashes": ["a"]}) == \
         {"update_offset": 0, "hashes": ["a"]}
     assert migrate_metadata(None) == {"update_offset": 0, "hashes": []}
+
+
+def test_validate_row():
+    assert validate_row(["q", ["a", "b"], 1, "e"]) == []
+    assert validate_row(["q", ["a", "b"], 5, "e"])
+    assert validate_row(["q", ["a", "b"]])
+    assert validate_row(None)

@@ -42,12 +42,17 @@ def read(name):
     return json.load(open(name))
 
 
+def files():
+    return sorted(f for f in os.listdir("quizzes") if f != "index.json")
+
+
 def test_saves_dedupes_and_ignores_strangers(run):
     sent = run([upd(10, 42, QUIZ), upd(11, 42, QUIZ), upd(12, 999, {**QUIZ, "question": "Other?"}),
                 upd(13, 42, {**QUIZ, "correct_option_id": None, "question": "Hidden?"})])
-    assert [q["question"] for q in read("quizzes.json")] == ["Q1?"]
+    assert len(files()) == 1
+    assert read("quizzes/" + files()[0]) == ["Q1?", ["a", "b"], 0, ""]
+    assert read("quizzes/index.json") == files()
     assert read("metadata.json")["update_offset"] == 14
-    assert len(read("quizzes_compact.json")) == 1
     text = sent[0]["text"]
     assert "Added 1" in text and "Duplicates 1" in text and "Skipped 1" in text
 
@@ -55,10 +60,37 @@ def test_saves_dedupes_and_ignores_strangers(run):
 def test_second_run_adds_nothing(run):
     run([upd(10, 42, QUIZ)])
     run([upd(11, 42, QUIZ)])
-    assert len(read("quizzes.json")) == 1
+    assert len(files()) == 1
 
 
 def test_requires_allowed_ids(run, monkeypatch):
     monkeypatch.setenv("ALLOWED_USER_IDS", "")
     with pytest.raises(SystemExit):
         run([])
+
+
+def test_each_quiz_in_own_file(run):
+    run([upd(10, 42, QUIZ), upd(11, 42, {**QUIZ, "question": "Q2?"})])
+    assert len(files()) == 2
+    assert len(read("quizzes/index.json")) == 2
+
+
+def stats_msg(uid, user):
+    return {"update_id": uid, "message": {"message_id": uid, "date": 1767225600,
+            "from": {"id": user}, "chat": {"id": user}, "text": "/stats"}}
+
+
+def test_stats_command(run):
+    sent = run([upd(10, 42, QUIZ), stats_msg(11, 42)])
+    assert any("Total quizzes: 1" in m["text"] for m in sent)
+
+
+def test_stats_ignored_for_strangers(run):
+    assert run([stats_msg(10, 999)]) == []
+
+
+def test_legacy_file_migrated(run, tmp_path):
+    json.dump([{"id": "abc", "question": "Old?", "options": ["a", "b"], "answer": 1,
+                "explanation": "e"}], open("quizzes.json", "w"))
+    run([])
+    assert read("quizzes/abc.json") == ["Old?", ["a", "b"], 1, "e"]
